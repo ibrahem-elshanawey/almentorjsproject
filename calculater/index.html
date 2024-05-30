@@ -34,105 +34,96 @@
         <button data-equal class="span_two equal">=</button>
     </div>
     <script>
-        var current_operand, previous_operand;
-        var current_operation;
+        let current_operand = '';
+        let previous_operand = '';
+        let current_operation = null;
+
         const button_number = document.querySelectorAll('[data-number]');
         const button_operation = document.querySelectorAll('[data-operation]');
         const button_delete = document.querySelector('[data-delete]');
         const button_equal = document.querySelector('[data-equal]');
         const clear = document.querySelector('[data-clear]');
-        var previous_operand_text = document.querySelector('.previous');
-        var current_operand_text = document.querySelector('.current');
-        // add number when clicking on a button 
-        function add_number(button_number_par) {
-            button_number.forEach(button_number_par => {
-                button_number_par.addEventListener('click', () => {
-                    if (current_operand_text.textContent === '.' && current_operand_text.textContent.includes('.')) {
-                        return
-                    }
-                    current_operand_text.textContent += button_number_par.innerHTML;
-                    current_operand = current_operand_text.textContent
-                })
-            })
-        }
-        add_number()
-        // add operation when clicking on a button 
-        button_operation.forEach(operation_button_par => {
-            operation_button_par.addEventListener('click', () => {
-                if (previous_operand_text.textContent.includes('-') || previous_operand_text.textContent.includes('+') || previous_operand_text.textContent.includes('*') || previous_operand_text.textContent.includes('/')) {
-                    let result;
-                    const prev = parseFloat(previous_operand);
-                    const current = parseFloat(current_operand)
-                    switch (current_operation) {
-                        case '+':
-                            result = current + prev
-                            break;
-                        case '-':
-                            result = prev - current
-                            break;
-                        case '*':
-                            result = current * prev
-                            break;
-                        case '/':
-                            result = prev / current
-                            break;
-                        default:
-                            break;
-                    }
-                    console.log("the current operand" + current_operand + "the pervious operand" + previous_operand + "result" + result)
-                    previous_operand_text.textContent = result + operation_button_par.textContent;
-                    current_operand_text.textContent = '';
-                    current_operand = '';
-                    previous_operand = result;
-                    current_operation = operation_button_par.textContent
-                } else {
-                    previous_operand = current_operand;
-                    current_operand = '';
-                    previous_operand_text.textContent = previous_operand + operation_button_par.textContent;
-                    current_operand_text.textContent = '';
-                    current_operation = operation_button_par.textContent;
-                }
-            })
-        })
-        // equal button
-        button_equal.addEventListener('click', () => {
-            if (previous_operand_text.textContent.includes('-') || previous_operand_text.textContent.includes('+') || previous_operand_text.textContent.includes('*') || previous_operand_text.textContent.includes('/')) {
-                let result;
-                const prev = parseFloat(previous_operand);
-                const current = parseFloat(current_operand)
-                switch (current_operation) {
-                    case '+':
-                        result = current + prev
-                        break;
-                    case '-':
-                        result = prev - current
-                        break;
-                    case '*':
-                        result = current * prev
-                        break;
-                    case '/':
-                        result = prev / current
-                        break;
-                    default:
-                        break;
-                }
-                current_operand_text.textContent = result;
-                current_operand = result;
-                previous_operand_text.textContent = '';
+        const previous_operand_text = document.querySelector('.previous');
+        const current_operand_text = document.querySelector('.current');
 
-            } else {
-                return
+        function add_number() {
+            button_number.forEach(button => {
+                button.addEventListener('click', () => {
+                    if (button.innerText === '.' && current_operand.includes('.')) return;
+                    current_operand += button.innerText;
+                    updateDisplay();
+                });
+            });
+        }
+
+        function chooseOperation(operation) {
+            if (current_operand === '') return;
+            if (previous_operand !== '') {
+                compute();
             }
-        })
-        // delete one number 
+            current_operation = operation;
+            previous_operand = current_operand;
+            current_operand = '';
+            updateDisplay();
+        }
+
+        function compute() {
+            let result;
+            const prev = parseFloat(previous_operand);
+            const current = parseFloat(current_operand);
+            if (isNaN(prev) || isNaN(current)) return;
+            switch (current_operation) {
+                case '+':
+                    result = prev + current;
+                    break;
+                case '-':
+                    result = prev - current;
+                    break;
+                case '*':
+                    result = prev * current;
+                    break;
+                case '/':
+                    result = prev / current;
+                    break;
+                default:
+                    return;
+            }
+            current_operand = result;
+            current_operation = null;
+            previous_operand = '';
+        }
+
+        function updateDisplay() {
+            current_operand_text.innerText = current_operand;
+            if (current_operation != null) {
+                previous_operand_text.innerText = `${previous_operand} ${current_operation}`;
+            } else {
+                previous_operand_text.innerText = '';
+            }
+        }
+
+        add_number();
+
+        button_operation.forEach(button => {
+            button.addEventListener('click', () => chooseOperation(button.innerText));
+        });
+
+        button_equal.addEventListener('click', () => {
+            compute();
+            updateDisplay();
+        });
+
         button_delete.addEventListener('click', () => {
             current_operand = current_operand.toString().slice(0, -1);
-            current_operand_text.textContent = current_operand;
-        })
-        // delete all 
+            updateDisplay();
+        });
+
         clear.addEventListener('click', () => {
-            current_operand = previous_operand = previous_operand_text.textContent = current_operand_text.textContent = '';
-        })
+            current_operand = '';
+            previous_operand = '';
+            current_operation = null;
+            updateDisplay();
+        });
     </script>
 </body>
 
